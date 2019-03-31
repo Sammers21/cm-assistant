@@ -2,3 +2,5 @@ plugins {
     id 'java'
     id 'application'
 }
+
+mainClassName = 'io.github.Sammers21.cm.picker.console.Main'
