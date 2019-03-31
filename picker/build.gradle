@@ -3,7 +3,7 @@ plugins{
 }
 
 dependencies {
-    compile 'io.vertx:vertx-web:3.6.3'
+    implementation 'io.vertx:vertx-web:3.6.3'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
