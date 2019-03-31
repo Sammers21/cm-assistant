@@ -6,14 +6,18 @@ import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.*
 
 fun main() {
+    val vertx = Vertx.vertx()
+    val dotabuffClientImpl = DotabuffClientImpl(vertx)
     runBlocking<Unit> {
-        val vertx = Vertx.vertx()
-        val dotabuffClientImpl = DotabuffClientImpl(vertx)
         launch(vertx.dispatcher()) {
-            for (hero in dotabuffClientImpl.heroes()) {
-                println(hero)
-            }
+            val heroes = dotabuffClientImpl.heroes()
+            heroes.forEach({ hero: String ->
+                println("Counters for " + hero)
+                dotabuffClientImpl.counters(hero).forEach { (key, value) ->
+                    println(String.format("Hero: '%s', Dis rate: '%s', Win rate: '%s', Matches: '%s'", key, value.disadvantage.toString(), value.winRate.toString(), value.matchesPlayed.toString()))
+                }
+            })
         }
-        dotabuffClientImpl.heroes();
     }
+    vertx.close()
 }
