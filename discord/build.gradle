@@ -3,4 +3,8 @@ plugins {
     id 'application'
 }
 
+dependencies {
+    compile project(":picker")
+}
+
 mainClassName = 'io.github.Sammers21.cm.picker.discord.Main'
