@@ -5,6 +5,7 @@ plugins {
 
 dependencies {
     compile project(":picker")
+    implementation 'org.javacord:javacord:3.0.3'
 }
 
 mainClassName = 'io.github.Sammers21.cm.picker.discord.Main'
