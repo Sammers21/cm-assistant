@@ -5,7 +5,16 @@ plugins {
 
 dependencies {
     compile project(":picker")
-    implementation 'org.javacord:javacord:3.0.3'
+    compile 'org.javacord:javacord:3.0.3'
+    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.9'
 }
 
 mainClassName = 'io.github.Sammers21.cm.picker.discord.Main'
+
+jar {
+    from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    manifest {
+        attributes 'Main-Class': mainClassName
+    }
+    archiveBaseName = "discord-bot"
+}
