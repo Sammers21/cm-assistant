@@ -1,7 +1,17 @@
 package io.github.Sammers21.cm.picker
 
+/**
+ * A client which parses dotabuff site.
+ */
 interface DotabuffClient {
-    fun heroes(): Set<String>
 
-    fun counters(hero: String): Map<String, CounterInfo>
+    /**
+     * Return a list of Dota 2 heroes.
+     */
+    fun heroes(): Set<Hero>
+
+    /**
+     * A map of counter heroes for a given one.
+     */
+    fun counters(hero: Hero): Map<Hero, CounterInfo>
 }

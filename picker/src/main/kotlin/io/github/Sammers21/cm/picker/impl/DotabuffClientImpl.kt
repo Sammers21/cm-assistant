@@ -2,6 +2,7 @@ package io.github.Sammers21.cm.picker.impl
 
 import io.github.Sammers21.cm.picker.CounterInfo
 import io.github.Sammers21.cm.picker.DotabuffClient
+import io.github.Sammers21.cm.picker.Hero
 import io.vertx.core.Vertx
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.ext.web.client.sendAwait
@@ -18,27 +19,28 @@ class DotabuffClientImpl : DotabuffClient {
         this.webClient = WebClient.create(vertx)
     }
 
-    override fun heroes(): Set<String> {
+    override fun heroes(): Set<Hero> {
         return runBlocking {
             val response = webClient.getAbs("https://www.dotabuff.com/heroes").sendAwait()
             val bodyAsString = response.bodyAsString()
             val parsedHtml = Jsoup.parse(bodyAsString)
-            val heroes = parsedHtml.select("body > div.container-outer.seemsgood > div.container-inner.container-inner-content > div.content-inner > section:nth-child(3) > footer > div > a > div > div.name")
-            heroes.map { it.text().toLowerCase() }
-                    .map { it.replace(" ", "_") }
+            val heroes = parsedHtml.select("body > div.container-outer.seemsgood > div.container-inner.container-inner-content > div.content-inner > section:nth-child(3) > footer > div > a")
+            heroes
+                    .map { it.attr("href").substring(8) }
+                    .map { Hero(it) }
                     .toSet()
         }
     }
 
-    override fun counters(hero: String): Map<String, CounterInfo> {
+    override fun counters(hero: Hero): Map<Hero, CounterInfo> {
         return runBlocking {
-            val url = String.format("https://www.dotabuff.com/heroes/%s/counters", hero.replace(" ", "-").toLowerCase())
+            val url = String.format("https://www.dotabuff.com/heroes/%s/counters", hero.originalHeroName)
             val response = webClient.getAbs(url).sendAwait()
             val bodyAsString = response.bodyAsString()
             val parsed = Jsoup.parse(bodyAsString)
             val heroes = parsed.select("body > div.container-outer.seemsgood > div.container-inner.container-inner-content > div.content-inner > section:nth-child(4) > article > table > tbody > tr")
             heroes.map { element ->
-                element.child(1).children().text().replace(" ", "_").toLowerCase() to
+                Hero(element.attr("data-link-to").substring(8)) to
                         CounterInfo(
                                 element.child(2).attr("data-value").toDouble(),
                                 element.child(3).attr("data-value").toDouble(),
