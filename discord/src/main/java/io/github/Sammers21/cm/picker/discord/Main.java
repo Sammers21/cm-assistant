@@ -1,5 +1,6 @@
 package io.github.Sammers21.cm.picker.discord;
 
+import com.google.common.collect.Lists;
 import io.github.Sammers21.cm.picker.CounterInfo;
 import io.github.Sammers21.cm.picker.DotabuffClient;
 import io.github.Sammers21.cm.picker.Hero;
@@ -104,15 +105,29 @@ public class Main {
     private static void clean(DiscordApi api, MessageCreateEvent event) {
         final CompletableFuture<MessageSet> messagesFuture = event.getChannel().getMessages(Integer.MAX_VALUE);
         messagesFuture.thenAccept(messages -> {
-            final List<Message> toDelete = messages.stream()
+            final Set<Message> allMessagesToDelete = messages.stream()
                     .filter(msg -> msg.getAuthor().getId() == api.getYourself().getId() || msg.getContent().startsWith("!"))
+                    .collect(Collectors.toSet());
+            final Set<Message> youngMessages = allMessagesToDelete.stream()
                     .filter(msg -> System.currentTimeMillis() - msg.getCreationTimestamp().toEpochMilli() < 7 * 2 * 24 * 60 * 60 * 1000)
-                    .collect(Collectors.toList());
-            log.info("Collected {} messages to delete", toDelete.size());
-            toDelete.forEach(msg -> {
-                event.getChannel().deleteMessages(msg).handle((aVoid, throwable) -> {
+                    .collect(Collectors.toSet());
+            final Set<Message> oldMessages = new HashSet<>(allMessagesToDelete);
+            oldMessages.removeAll(youngMessages);
+
+            log.info("Collected {} messages to delete", allMessagesToDelete.size());
+            final List<List<Message>> partitions = Lists.partition(new ArrayList<>(youngMessages), 99);
+            partitions.forEach(partition -> {
+                event.getChannel().deleteMessages(partition).handle((aVoid, throwable) -> {
                     if (throwable != null) {
-                        log.error("Message deletion error:", throwable);
+                        log.error("Young message deletion error:", throwable);
+                    }
+                    return null;
+                });
+            });
+            oldMessages.forEach(oldMessage -> {
+                event.getChannel().deleteMessages(oldMessage).handle((aVoid, throwable) -> {
+                    if (throwable != null) {
+                        log.error("Old message deletion error:", throwable);
                     }
                     return null;
                 });
