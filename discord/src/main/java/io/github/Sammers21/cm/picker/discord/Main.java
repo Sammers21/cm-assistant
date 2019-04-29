@@ -14,7 +14,13 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -24,6 +30,11 @@ public class Main {
 
 
     public static void main(String[] args) {
+        if (args.length != 1) {
+            throw new IllegalStateException("Invalid amount of arguments." +
+                    " Token should be passed as a single argument");
+        }
+
         String token = args[0];
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
         DotabuffClient dotabuffClient = new DotabuffClientImpl(Vertx.vertx());
