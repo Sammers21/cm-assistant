@@ -128,6 +128,8 @@ public class Main {
     }
 
     private static void clean(DiscordApi api, MessageCreateEvent event) {
+        event.getChannel().sendMessage("Зачищаем чатик...");
+        event.getChannel().sendMessage("Олды тут?");
         final CompletableFuture<MessageSet> messagesFuture = event.getChannel().getMessages(Integer.MAX_VALUE);
         messagesFuture.thenAccept(messages -> {
             final Set<Message> allMessagesToDelete = messages.stream()
