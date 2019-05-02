@@ -8,7 +8,7 @@ interface DotabuffClient {
     /**
      * Return a list of Dota 2 heroes.
      */
-    fun heroes(): Set<Hero>
+    fun heroes(): Dota2Heroes
 
     /**
      * A map of counter heroes for a given one.

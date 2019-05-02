@@ -2,6 +2,7 @@ package io.github.Sammers21.cm.picker.discord;
 
 import com.google.common.collect.Lists;
 import io.github.Sammers21.cm.picker.CounterInfo;
+import io.github.Sammers21.cm.picker.Dota2Heroes;
 import io.github.Sammers21.cm.picker.DotabuffClient;
 import io.github.Sammers21.cm.picker.Hero;
 import io.github.Sammers21.cm.picker.impl.DotabuffClientImpl;
@@ -38,7 +39,9 @@ public class Main {
         String token = args[0];
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
         DotabuffClient dotabuffClient = new DotabuffClientImpl(Vertx.vertx());
-        final Set<Hero> heroes = dotabuffClient.heroes();
+        Dota2Heroes heroes = dotabuffClient.heroes();
+        Set<Hero> heroSet = heroes.getHeroes();
+
 
         api.addMessageCreateListener(event -> {
             try {
@@ -47,11 +50,11 @@ public class Main {
                 if (content.equalsIgnoreCase("!ping")) {
                     ping(event);
                 } else if (content.startsWith("!vs")) {
-                    vs(dotabuffClient, heroes, event, content);
+                    vs(dotabuffClient, heroSet, event, content);
                 } else if (content.equals("!clear") || content.equals("!clean")) {
                     clean(api, event);
                 } else if (content.equals("!heroes")) {
-                    heroesList(heroes, event);
+                    heroesList(heroSet, event);
                 }
             } catch (Throwable t) {
                 log.error("Error occurred: ", t);
