@@ -1,6 +1,7 @@
 package io.github.Sammers21.cm.picker.impl
 
 import io.github.Sammers21.cm.picker.CounterInfo
+import io.github.Sammers21.cm.picker.Dota2Heroes
 import io.github.Sammers21.cm.picker.DotabuffClient
 import io.github.Sammers21.cm.picker.Hero
 import io.vertx.core.Vertx
@@ -19,16 +20,16 @@ class DotabuffClientImpl : DotabuffClient {
         this.webClient = WebClient.create(vertx)
     }
 
-    override fun heroes(): Set<Hero> {
+    override fun heroes(): Dota2Heroes {
         return runBlocking {
             val response = webClient.getAbs("https://www.dotabuff.com/heroes").sendAwait()
             val bodyAsString = response.bodyAsString()
             val parsedHtml = Jsoup.parse(bodyAsString)
             val heroes = parsedHtml.select("body > div.container-outer.seemsgood > div.container-inner.container-inner-content > div.content-inner > section:nth-child(3) > footer > div > a")
-            heroes
                     .map { it.attr("href").substring(8) }
                     .map { Hero(it) }
                     .toSet()
+            Dota2Heroes(heroes)
         }
     }
 

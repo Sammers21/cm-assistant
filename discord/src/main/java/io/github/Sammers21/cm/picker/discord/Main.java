@@ -15,13 +15,7 @@ import org.javacord.api.event.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -40,9 +34,6 @@ public class Main {
         DiscordApi api = new DiscordApiBuilder().setToken(token).login().join();
         DotabuffClient dotabuffClient = new DotabuffClientImpl(Vertx.vertx());
         Dota2Heroes heroes = dotabuffClient.heroes();
-        Set<Hero> heroSet = heroes.getHeroes();
-
-
         api.addMessageCreateListener(event -> {
             try {
                 final Message message = event.getMessage();
@@ -50,11 +41,13 @@ public class Main {
                 if (content.equalsIgnoreCase("!ping")) {
                     ping(event);
                 } else if (content.startsWith("!vs")) {
-                    vs(dotabuffClient, heroSet, event, content);
+                    vs(dotabuffClient, heroes, event, content);
                 } else if (content.equals("!clear") || content.equals("!clean")) {
                     clean(api, event);
                 } else if (content.equals("!heroes")) {
-                    heroesList(heroSet, event);
+                    heroesList(heroes, event);
+                } else if (content.startsWith("!e") || content.startsWith("!exist") || content.startsWith("!ex") || content.startsWith("!exists")) {
+                    exists(heroes, event);
                 }
             } catch (Throwable t) {
                 log.error("Error occurred: ", t);
@@ -64,27 +57,45 @@ public class Main {
         log.info("You can invite the bot by using the following url: " + api.createBotInvite());
     }
 
-    private static void heroesList(Set<Hero> heroes, MessageCreateEvent event) {
-        heroes.forEach(hero -> {
+    private static void exists(Dota2Heroes heroes, MessageCreateEvent event) {
+        final String[] split = event.getMessageContent().split(" ");
+        if (split.length != 2) {
+            log.error("invalid 'exists' command usage: {} ", event.getMessageContent());
+            event.getChannel().sendMessage("Invalid command usage. Correct one: `!exists io`");
+            return;
+        }
+
+        final String alias = split[1];
+        if (heroes.heroExists(alias)) {
+            event.getChannel().sendMessage(String.format("Sure, the original hero name: %s", heroes.lookUpHero(alias).getOriginalHeroName()));
+        } else {
+            event.getChannel().sendMessage("The hero does not exits");
+        }
+    }
+
+    private static void heroesList(Dota2Heroes heroes, MessageCreateEvent event) {
+        heroes.getHeroes().forEach(hero -> {
             event.getChannel().sendMessage(hero.getOriginalHeroName());
         });
+
     }
 
     private static void ping(MessageCreateEvent event) {
         event.getChannel().sendMessage("Pong!");
     }
 
-    private static void vs(DotabuffClient dotabuffClient, Set<Hero> heroes, MessageCreateEvent event, String content) {
+    private static void vs(DotabuffClient dotabuffClient, Dota2Heroes heroes, MessageCreateEvent event, String content) {
         final String[] argsList = content.substring(3).strip().split(" ");
-        final Set<Hero> inputHeroes = Arrays.stream(argsList).map(String::toLowerCase).map(Hero::new).collect(Collectors.toSet());
-        final Set<Hero> nonValidHeroes = inputHeroes.stream().filter(inputHero -> !heroes.contains(inputHero)).collect(Collectors.toSet());
+        final Set<String> inputList = Arrays.stream(argsList).map(String::toLowerCase).collect(Collectors.toSet());
+        final Set<String> nonValidHeroes = inputList.stream().filter(inputHero -> !heroes.heroExists(inputHero)).collect(Collectors.toSet());
         if (!nonValidHeroes.isEmpty()) {
-            nonValidHeroes.forEach(nonValidHero -> event.getChannel().sendMessage(String.format("Героя '%s' в доте не существует", nonValidHero.getOriginalHeroName())));
+            nonValidHeroes.forEach(nonValidHero -> event.getChannel().sendMessage(String.format("Героя '%s' в доте не существует", nonValidHero)));
         } else {
-            final Set<Hero> heroesToCalculateFor = new HashSet<>(heroes);
-            heroesToCalculateFor.removeAll(inputHeroes);
+            final Set<Hero> inputHeroList = inputList.stream().map(heroes::lookUpHero).collect(Collectors.toSet());
+            final Set<Hero> heroesToCalculateFor = new HashSet<>(heroes.getHeroes());
+            heroesToCalculateFor.removeAll(inputHeroList);
             final Map<Hero, Double> scores = heroesToCalculateFor.stream().collect(Collectors.toMap(o -> o, o -> 0d));
-            inputHeroes.stream()
+            inputHeroList.stream()
                     .map(hero ->
                     {
                         log.info("Requesting counters for '{}'", hero);

@@ -7,7 +7,7 @@ fun main() {
     val vertx = Vertx.vertx()
     val dotabuffClientImpl = DotabuffClientImpl(vertx)
     val heroes = dotabuffClientImpl.heroes()
-    heroes.forEach({ hero ->
+    heroes.heroes.forEach({ hero ->
         println("Counters for " + hero)
         dotabuffClientImpl.counters(hero).forEach { (key, value) ->
             println(String.format("Hero: '%s', Dis rate: '%s', Win rate: '%s', Matches: '%s'", key.originalHeroName, value.disadvantage.toString(), value.winRate.toString(), value.matchesPlayed.toString()))
