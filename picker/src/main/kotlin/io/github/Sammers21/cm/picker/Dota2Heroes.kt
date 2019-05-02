@@ -6,7 +6,7 @@ typealias HeroAlias = Pair<List<String>, String>
 
 data class Dota2Heroes(val heroes: Set<Hero>, val aliases: List<HeroAlias> = Aliases.DefaultAliases) {
 
-    var internalLookUpMap: MutableMap<String, Hero> = ConcurrentHashMap()
+    private var internalLookUpMap: MutableMap<String, Hero> = ConcurrentHashMap()
 
     init {
         heroes.forEach { hero: Hero ->

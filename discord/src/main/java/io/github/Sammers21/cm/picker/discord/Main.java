@@ -74,10 +74,11 @@ public class Main {
     }
 
     private static void heroesList(Dota2Heroes heroes, MessageCreateEvent event) {
-        heroes.getHeroes().forEach(hero -> {
-            event.getChannel().sendMessage(hero.getOriginalHeroName());
-        });
-
+        final StringBuilder stringBuilder = new StringBuilder();
+        for (Hero hero : heroes.getHeroes()) {
+            stringBuilder.append(String.format("%s\n", hero.getOriginalHeroName()));
+        }
+        event.getChannel().sendMessage(stringBuilder.toString());
     }
 
     private static void ping(MessageCreateEvent event) {
