@@ -117,14 +117,16 @@ public class Main {
                 });
             });
 
-            event.getChannel().sendMessage("Полная контра:");
+            final StringBuilder result = new StringBuilder();
+            result.append("Полная контра:\n");
             scores.entrySet()
                     .stream()
                     .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                    .limit(16)
+                    .limit(32)
                     .forEach(entry -> {
-                        event.getChannel().sendMessage(String.format("Герой: '%s', Очков контры: '%.2f'\n", entry.getKey().getOriginalHeroName(), entry.getValue()));
+                        result.append(String.format("Герой: '%s', Очков контры: '%.2f'\n", entry.getKey().getOriginalHeroName(), entry.getValue()));
                     });
+            event.getChannel().sendMessage(result.toString());
         }
     }
 
