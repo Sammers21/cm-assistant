@@ -87,7 +87,19 @@ public class Main {
 
     private static void vs(DotabuffClient dotabuffClient, Dota2Heroes heroes, MessageCreateEvent event, String content) {
         final String[] argsList = content.substring(3).strip().split(" ");
+        int heroesToPrint = 32;
         final Set<String> inputList = Arrays.stream(argsList).map(String::toLowerCase).collect(Collectors.toSet());
+
+        final Optional<Integer> lastArgAsInt = lastArgAsInt(argsList);
+        if (argsList.length > 1 && lastArgAsInt.isPresent()) {
+            final Integer integer = lastArgAsInt.get();
+            if (integer > 0) {
+                heroesToPrint = integer;
+                inputList.remove(integer.toString());
+            }
+        }
+
+
         final Set<String> nonValidHeroes = inputList.stream().filter(inputHero -> !heroes.heroExists(inputHero)).collect(Collectors.toSet());
         if (!nonValidHeroes.isEmpty()) {
             nonValidHeroes.forEach(nonValidHero -> event.getChannel().sendMessage(String.format("Героя '%s' в доте не существует", nonValidHero)));
@@ -116,18 +128,31 @@ public class Main {
                     }
                 });
             });
-
-            final StringBuilder result = new StringBuilder();
-            result.append("Полная контра:\n");
-            scores.entrySet()
-                    .stream()
-                    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                    .limit(32)
-                    .forEach(entry -> {
-                        result.append(String.format("Герой: '%s', Очков контры: '%.2f'\n", entry.getKey().getOriginalHeroName(), entry.getValue()));
-                    });
-            event.getChannel().sendMessage(result.toString());
+            printVsInfo(event, heroesToPrint, scores);
         }
+    }
+
+    private static Optional<Integer> lastArgAsInt(String[] argsList) {
+        var lastArg = argsList[argsList.length - 1];
+        try {
+            final int parseInt = Integer.parseInt(lastArg);
+            return Optional.of(parseInt);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static void printVsInfo(MessageCreateEvent event, int heroesToPrint, Map<Hero, Double> scores) {
+        final StringBuilder result = new StringBuilder();
+        result.append(String.format("Полная контра(топ %d героев):\n", heroesToPrint));
+        scores.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .limit(heroesToPrint)
+                .forEach(entry -> {
+                    result.append(String.format("Герой: '%s', Очков контры: '%.2f'\n", entry.getKey().getOriginalHeroName(), entry.getValue()));
+                });
+        event.getChannel().sendMessage(result.toString());
     }
 
     private static void clean(DiscordApi api, MessageCreateEvent event) {
