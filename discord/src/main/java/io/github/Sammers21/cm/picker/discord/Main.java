@@ -48,6 +48,8 @@ public class Main {
                     heroesList(heroes, event);
                 } else if (content.startsWith("!e") || content.startsWith("!exist") || content.startsWith("!ex") || content.startsWith("!exists")) {
                     exists(heroes, event);
+                } else if (content.startsWith("!help")) {
+                    help(event);
                 }
             } catch (Throwable t) {
                 log.error("Error occurred: ", t);
@@ -55,6 +57,16 @@ public class Main {
         });
 
         log.info("You can invite the bot by using the following url: " + api.createBotInvite());
+    }
+
+    private static void help(MessageCreateEvent event) {
+        StringBuilder helpOutput = new StringBuilder();
+        helpOutput.append("Команды:").append("\n")
+                .append("\t`!vs висп снайпер 30` - топ 30 лучших героев против виспа и снайпера").append("\n")
+                .append("\t`!clean` - произвести зачистку чатика").append("\n")
+                .append("\t`!e князь` - проверить существует ли герой `князь`").append("\n")
+                .append("\t`!heroes` - напечатать список все героев в доте").append("\n");
+        event.getChannel().sendMessage(helpOutput.toString());
     }
 
     private static void exists(Dota2Heroes heroes, MessageCreateEvent event) {
