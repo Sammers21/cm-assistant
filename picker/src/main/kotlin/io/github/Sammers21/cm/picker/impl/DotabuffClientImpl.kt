@@ -35,7 +35,7 @@ class DotabuffClientImpl : DotabuffClient {
 
     override fun counters(hero: Hero): Map<Hero, CounterInfo> {
         return runBlocking {
-            val url = String.format("https://www.dotabuff.com/heroes/%s/counters", hero.originalHeroName)
+            val url = String.format("https://www.dotabuff.com/heroes/%s/counters?date=week", hero.originalHeroName)
             val response = webClient.getAbs(url).sendAwait()
             val bodyAsString = response.bodyAsString()
             val parsed = Jsoup.parse(bodyAsString)
