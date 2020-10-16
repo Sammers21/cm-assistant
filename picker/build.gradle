@@ -14,7 +14,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.1'
     compile 'org.jsoup:jsoup:1.12.2'
-    compile 'io.vertx:vertx-lang-kotlin:3.6.3'
+    compile 'io.vertx:vertx-lang-kotlin:3.9.4'
     compile 'io.vertx:vertx-lang-kotlin-coroutines:3.6.3'
     compile 'io.vertx:vertx-web-client:3.6.3'
     compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
